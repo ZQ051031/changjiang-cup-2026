@@ -136,7 +136,7 @@ def validate_csvs(tracks, directory, allow_empty=False):
     total = 0
     for track in tracks:
         path = directory / track.csv_name
-        with path.open(encoding="utf-8", newline="") as handle:
+        with path.open(encoding="utf-8-sig", newline="") as handle:
             reader = csv.reader(handle, strict=True)
             if tuple(next(reader, ())) != COLUMNS:
                 raise ValueError(f"{path}: unexpected CSV header")

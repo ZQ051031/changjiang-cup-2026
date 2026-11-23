@@ -147,6 +147,15 @@ def test_population_across_all_tracks(tracks, templates):
     assert cup.validate_csvs(tracks, templates) == 7
 
 
+def test_accepts_spreadsheet_csv_with_utf8_bom(tracks, templates):
+    track = tracks[0]
+    path = templates / track.csv_name
+    append_rows(path, [fixture_row(track)])
+    original = path.read_text(encoding="utf-8")
+    path.write_text(original, encoding="utf-8-sig")
+    assert cup.validate_csvs(tracks, templates, allow_empty=True) == 1
+
+
 @pytest.mark.parametrize("count", [20, 21])
 def test_enforces_candidate_cap(tracks, templates, count):
     track = tracks[0]
