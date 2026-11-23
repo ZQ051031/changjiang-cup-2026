@@ -1,0 +1,9 @@
+[
+  {"track": 1, "target": "EGFR", "molecule_type": "VHH", "accession": "P00533-1", "start": 1, "end": 645, "first": "M", "last": "S", "pdb": "6ARU", "chains": ["A"], "condition": "Measure affinity at pH 6.0.", "sha256": "5817507f2611dd0a66aea37c654b468933b6569c7c83f1beb99bcd3523bc07a2"},
+  {"track": 2, "target": "TNF-alpha", "molecule_type": "VHH", "accession": "P01375", "start": 77, "end": 233, "first": "V", "last": "L", "pdb": "1TNF", "chains": ["A", "B", "C"], "condition": "Trimer.", "sha256": "788eca607f0924e37a17c50cf53e6f7cd09164eeccf8a2f35e0fd6d904293950"},
+  {"track": 3, "target": "GLP-1R", "molecule_type": "VHH", "accession": "P43220", "start": 24, "end": 432, "first": "R", "last": "S", "pdb": "6X18", "chains": ["R"], "condition": "Agonist required.", "sha256": "c97e82c3f1301256d2802e2b01e1f72f2880a2e62d26f4c8bd73752ca296a8ed"},
+  {"track": 4, "target": "TfR1", "molecule_type": "VHH", "accession": "P02786", "start": 89, "end": 760, "first": "C", "last": "F", "pdb": "11QC", "chains": ["A", "B"], "condition": "Dimer.", "sha256": "5c886e4b99b913ccaa6f0a308db942448bb853da6bd340302350d6918d053d47"},
+  {"track": 5, "target": "TL1A", "molecule_type": "minibinder", "accession": "O95150", "start": 72, "end": 251, "first": "L", "last": "L", "pdb": "2RE9", "chains": ["A", "B", "C"], "condition": "Trimer.", "sha256": "c9315088db05300f0ae9b73cfe24550d026defc505141632c791e098740e2f7b"},
+  {"track": 6, "target": "TNFR1", "molecule_type": "VHH", "accession": "P19438-1", "start": 30, "end": 211, "first": "L", "last": "T", "pdb": "9S3I", "chains": ["A"], "condition": "", "sha256": "b977f5b0c0cf5688a2262bf0c0fe8e40d19f9f49a9da70bb09932434da550212"},
+  {"track": 7, "target": "IL-7Ralpha", "molecule_type": "minibinder", "accession": "P16871-1", "start": 21, "end": 239, "first": "E", "last": "D", "pdb": "3DI3", "chains": ["B"], "condition": "", "sha256": "ecdc20f8346168dbf6fd9c54ee032b1b9f1dc64a43d027bb0e06f66017de371c"}
+]
