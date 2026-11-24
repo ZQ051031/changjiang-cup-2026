@@ -1,4 +1,5 @@
 import csv
+import json
 from urllib.error import URLError
 
 import pytest
@@ -227,3 +228,46 @@ def test_rejects_bad_csv_shape(tracks, templates, bad_csv, error):
 def test_cli_reports_bad_csv(templates, capsys):
     assert cup.main(["validate", "--directory", str(templates)]) == 1
     assert "empty track CSV" in capsys.readouterr().err
+
+
+def test_describe_fasta_reports_counts_and_mean_hydropathy(tmp_path):
+    path = tmp_path / "example.fasta"
+    path.write_text(">example composition fixture\nACCDE\nHIKR\n")
+    assert cup.describe_fasta(path) == {
+        "id": "example",
+        "length": 9,
+        "cysteine_count": 2,
+        "acidic_residue_count": 2,
+        "basic_residue_count": 2,
+        "basic_minus_acidic_count": 0,
+        "mean_kyte_doolittle_hydropathy": pytest.approx(-7.3 / 9),
+    }
+
+
+def test_describe_cli_preserves_input_order_and_is_deterministic(tmp_path, capsys, monkeypatch):
+    first = tmp_path / "first.fasta"
+    second = tmp_path / "second.fasta"
+    first.write_text(">first\nKRR\n")
+    second.write_text(">second\nDEE\n", encoding="utf-8-sig")
+    # Description of standalone FASTAs should work without any track data.
+    monkeypatch.setattr(cup, "TARGETS", tmp_path / "missing")
+    args = ["describe", str(second), str(first)]
+    assert cup.main(args) == 0
+    original = capsys.readouterr().out
+    reports = json.loads(original)
+    assert [report["id"] for report in reports] == ["second", "first"]
+    assert [report["basic_minus_acidic_count"] for report in reports] == [-3, 3]
+    assert cup.main(args) == 0
+    assert capsys.readouterr().out == original
+
+
+@pytest.mark.parametrize("contents", ["", ">\nAA\n", ">id\n", ">id\nAX\n", ">a\nA\n>b\nA\n"])
+def test_describe_rejects_invalid_single_record_fasta(tmp_path, capsys, contents):
+    good = tmp_path / "good.fasta"
+    good.write_text(">good\nAA\n")
+    bad = tmp_path / "bad.fasta"
+    bad.write_text(contents)
+    assert cup.main(["describe", str(good), str(bad)]) == 1
+    output = capsys.readouterr()
+    assert output.out == ""
+    assert f"{bad}: expected a single FASTA record" in output.err

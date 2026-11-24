@@ -1,6 +1,6 @@
 # Changjiang Cup 2026 reference and CSV tools
 
-This repository contains the seven public human UniProt reference regions, seven header-only CSV templates, and an offline format validator. The templates contain zero candidate rows. Candidate design, experimental validation, structure prediction, and ranking are outside this implementation.
+This repository contains the seven public human UniProt reference regions, seven header-only CSV templates, an offline format validator, and sequence composition reporting. The templates contain zero candidate rows. Candidate design, experimental validation, structure prediction, and ranking are outside this implementation.
 
 ## Run locally
 
@@ -21,6 +21,14 @@ python cup.py validate --allow-empty --directory ./local-templates
 To validate files you supply, point the validator at a directory with all seven named CSVs. Use `--allow-empty` if some tracks have no rows. Populated rows are checked in both modes. Score method labels have the format `proxy:<method>` or `official-method:<method>`. See the [validation scope](submissions/DESIGN_SUMMARY.md) before using the results.
 
 The FASTA cache comes from UniProtKB release 2026_04. The range is 1-based and inclusive. Restore the cache when online with `python cup.py fetch-targets`. It checks the source accession and human taxonomy, then compares length, endpoint residues, and the SHA-256 of the extracted region against [the manifest](data/targets/tracks.json). A missing accession, network failure, or mismatch exits nonzero. The checked-in FASTAs are sufficient for offline validation.
+
+## Describe sequences
+
+```sh
+python cup.py describe reference.fasta another-reference.fasta
+```
+
+Pass one or more single-record FASTA files with uppercase standard amino acids. The command writes a JSON array to stdout in input order and works offline without the track data. It reports length, cysteine count, D/E and K/R counts, the K/R minus D/E count, and mean hydropathy. The charge count omits histidine, termini, and pH effects. Mean hydropathy is the arithmetic mean of the published residue values. These descriptors leave the submission CSVs untouched and provide no binding, solubility, or aggregation predictions. [Kyte–Doolittle scale](https://web.expasy.org/protscale/pscale/Hphob.Doolittle.html)
 
 ## Tracks
 

@@ -22,3 +22,5 @@ python cup.py validate --allow-empty
 ```
 
 `python cup.py write-templates --directory ./local-templates` recreates the headers without modifying existing CSVs. `python cup.py fetch-targets` restores the reference data over HTTPS, verifying the pinned checksums before replacing cached files. The format tool provides no candidate generator or structure and affinity scoring.
+
+`python cup.py describe reference.fasta` reports composition, cysteine count, the K/R minus D/E count, and mean hydropathy for an input FASTA. These are sequence descriptors. They do not establish binding, pH-dependent charge, solubility, aggregation, or experimental developability. The output is JSON and is independent of the submission files. [Kyte–Doolittle scale](https://web.expasy.org/protscale/pscale/Hphob.Doolittle.html)
