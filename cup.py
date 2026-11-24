@@ -1,11 +1,12 @@
-"""Public reference data and CSV format checks for Changjiang Cup 2026."""
+"""Public reference data, sequence descriptors, and CSV format checks."""
 
 import argparse
+from collections import Counter
 import csv
 from dataclasses import dataclass
 from hashlib import sha256
 import json
-from math import isfinite
+from math import fsum, isfinite
 from pathlib import Path
 import sys
 from tempfile import NamedTemporaryFile
@@ -25,6 +26,13 @@ COLUMNS = (
 COMMON_TAGS = (
     "HHHHHH", "DYKDDDDK", "YPYDVPDYA", "EQKLISEEDL", "WSHPQFEK",
 )
+# Kyte and Doolittle (1982), as reproduced by ExPASy ProtScale.
+KYTE_DOOLITTLE = {
+    "A": 1.8, "C": 2.5, "D": -3.5, "E": -3.5, "F": 2.8,
+    "G": -0.4, "H": -3.2, "I": 4.5, "K": -3.9, "L": 3.8,
+    "M": 1.9, "N": -3.5, "P": -1.6, "Q": -3.5, "R": -4.5,
+    "S": -0.8, "T": -0.7, "V": 4.2, "W": -0.9, "Y": -1.3,
+}
 
 
 @dataclass(frozen=True)
@@ -60,11 +68,36 @@ def read_tracks():
 
 
 def read_fasta(text):
-    header, *lines = text.splitlines()
+    header, *lines = text.splitlines() or [""]
     sequence = "".join(lines)
-    if not header.startswith(">") or not sequence or set(sequence) - AMINO_ACIDS:
+    if (
+        not header.startswith(">") or not header[1:].strip()
+        or not sequence or set(sequence) - AMINO_ACIDS
+    ):
         raise ValueError("expected a single FASTA record with standard amino acids")
     return header[1:], sequence
+
+
+def describe_fasta(path):
+    """Return composition descriptors for one FASTA file."""
+    try:
+        header, sequence = read_fasta(path.read_text(encoding="utf-8-sig"))
+    except ValueError as error:
+        raise ValueError(f"{path}: {error}") from error
+    counts = Counter(sequence)
+    acidic = counts["D"] + counts["E"]
+    basic = counts["K"] + counts["R"]
+    return {
+        "id": header.split(maxsplit=1)[0],
+        "length": len(sequence),
+        "cysteine_count": counts["C"],
+        "acidic_residue_count": acidic,
+        "basic_residue_count": basic,
+        "basic_minus_acidic_count": basic - acidic,
+        "mean_kyte_doolittle_hydropathy": (
+            fsum(KYTE_DOOLITTLE[residue] for residue in sequence) / len(sequence)
+        ),
+    }
 
 
 def check_target_sequence(track, sequence):
@@ -186,6 +219,8 @@ def validate_csvs(tracks, directory, allow_empty=False):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
+    describe = commands.add_parser("describe", help="report sequence descriptors as JSON")
+    describe.add_argument("fasta", type=Path, nargs="+", help="single-record FASTA file")
     for command, default, help_text in (
         ("check-targets", TARGETS, "verify the pinned FASTA cache offline"),
         ("fetch-targets", TARGETS, "restore the pinned FASTA cache from UniProt"),
@@ -199,6 +234,11 @@ def main(argv=None):
 
     args = parser.parse_args(argv)
     try:
+        if args.command == "describe":
+            reports = [describe_fasta(path) for path in args.fasta]
+            print(json.dumps(reports, indent=2))
+            return 0
+
         tracks = read_tracks()
         if args.command == "check-targets":
             check_cached_targets(tracks, args.directory)
